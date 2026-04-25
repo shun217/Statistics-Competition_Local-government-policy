@@ -1,0 +1,43 @@
+                          PanelOLS Estimation Summary                           
+================================================================================
+Dep. Variable:                 ln_教育費   R-squared:                        0.4200
+Estimator:                   PanelOLS   R-squared (Between):              0.8332
+No. Observations:               11598   R-squared (Within):               0.3886
+Date:                Sat, Apr 25 2026   R-squared (Overall):              0.8315
+Time:                        13:48:35   Log-likelihood                    561.57
+Cov. Estimator:             Clustered                                           
+                                        F-statistic:                      564.56
+Entities:                        1445   P-value                           0.0000
+Avg Obs:                       8.0263   Distribution:                F(13,10134)
+Min Obs:                       1.0000                                           
+Max Obs:                       408.00   F-statistic (robust):             7.6900
+                                        P-value                           0.0000
+Time periods:                       7   Distribution:                F(13,10134)
+Avg Obs:                       1656.9                                           
+Min Obs:                       1368.0                                           
+Max Obs:                       1859.0                                           
+                                                                                
+                              Parameter Estimates                               
+================================================================================
+              Parameter  Std. Err.     T-stat    P-value    Lower CI    Upper CI
+--------------------------------------------------------------------------------
+CPC1_term_2      0.0014     0.0035     0.3882     0.6979     -0.0055      0.0082
+CPC1_term_3     -0.0092     0.0038    -2.4306     0.0151     -0.0166     -0.0018
+CPC1_term_4     -0.0040     0.0042    -0.9625     0.3358     -0.0123      0.0042
+CPC2_term_2     -0.0077     0.0062    -1.2326     0.2178     -0.0199      0.0045
+CPC2_term_3     -0.0144     0.0065    -2.2060     0.0274     -0.0273     -0.0016
+CPC2_term_4     -0.0063     0.0063    -0.9968     0.3189     -0.0186      0.0061
+CHPC1_term_2     0.0032     0.0031     1.0305     0.3028     -0.0029      0.0092
+CHPC1_term_3     0.0006     0.0033     0.1865     0.8521     -0.0058      0.0070
+CHPC1_term_4    -0.0042     0.0044    -0.9646     0.3348     -0.0128      0.0044
+CHPC2_term_2     0.0034     0.0045     0.7741     0.4389     -0.0053      0.0122
+CHPC2_term_3    -0.0034     0.0046    -0.7364     0.4615     -0.0124      0.0056
+CHPC2_term_4    -0.0028     0.0048    -0.5811     0.5612     -0.0122      0.0066
+ln_算出決算総額        1.2112     0.1370     8.8408     0.0000      0.9426      1.4797
+================================================================================
+
+F-test for Poolability: 8.5014
+P-value: 0.0000
+Distribution: F(1450,10134)
+
+Included effects: Entity, Time
