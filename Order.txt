@@ -1,3 +1,4 @@
 Order to proceed:
+0. scrape_seijiyama_full.py: スクレイピングによって政治山から投票に関する情報を取得する。アウトプット:data/seijiyama_result_all.csv。
 1. Reshape_scraped.R:スクレイピングによる元データを自治体ごとの表形式にする。利用データ:data/seijiyama_result_all.csv。アウトプット:data/af_agg.csv。
-2. Reshape_table.R:自治体ごと表形式のデータを利用可能な欠損値のないデータへと変換する。利用データ:data/af_agg.csv。アウトプット:data/af_voting.csv
+2. Reshape_table.R:自治体ごと表形式のデータを利用可能な欠損値のないデータへと変換する。利用データ:data/af_agg.csv。アウトプット:data/af_voting.csv。
