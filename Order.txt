@@ -1,0 +1,3 @@
+Order to proceed:
+1. Reshape_scraped.R:スクレイピングによる元データを自治体ごとの表形式にする。利用データ:data/seijiyama_result_all.csv。アウトプット:data/af_agg.csv。
+2. Reshape_table.R:自治体ごと表形式のデータを利用可能な欠損値のないデータへと変換する。利用データ:data/af_agg.csv。アウトプット:data/af_voting.csv

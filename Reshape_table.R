@@ -226,6 +226,6 @@ df <- df[, c("地域コード", "都道府県", "市区町村", "地域", "投�
 #====================================================================================
 # 8. csvとして出力
 
-write.csv(df, "data/af_agg_final.csv", row.names = FALSE, fileEncoding = "UTF-8")
+write.csv(df, "data/voting.csv", row.names = FALSE, fileEncoding = "UTF-8")
 
 
