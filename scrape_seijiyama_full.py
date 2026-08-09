@@ -4,8 +4,8 @@
 seijiyama.jp 地方選挙スクレイパー(全件・レジューム対応版)
 ============================================================
 
-全 7260 選挙 / 37 ページを巡回し、各選挙の候補者情報(当落含む)と
-選挙メタ情報を取得して CSV に保存する。
+投票日 2022/01/01〜2022/03/31 の選挙を全ページ巡回し、各選挙の候補者情報
+(当落含む)と選挙メタ情報を取得して CSV に保存する。
 
 このバージョンで追加した機能:
   1) レジューム   … 中断しても再実行すれば途中(未処理の詳細ページ)から続行。
@@ -32,9 +32,9 @@ seijiyama.jp 地方選挙スクレイパー(全件・レジューム対応版)
     python scrape_seijiyama_full.py --restart          # 進捗を捨てて最初からやり直し
 
 出力(1候補者=1行):
-    seijiyama_result.csv       … 本体(追記)
-    seijiyama_progress.json    … 進捗(処理済み詳細URL・処理済みページ)
-    seijiyama_failures.log     … 失敗した URL の記録
+    seijiyama_result_2022.csv       … 本体(追記)
+    seijiyama_progress_2022.json    … 進捗(処理済み詳細URL・処理済みページ)
+    seijiyama_failures_2022.log     … 失敗した URL の記録
 """
 
 import argparse
@@ -63,16 +63,14 @@ BASE = "https://seijiyama.jp"
 
 LIST_URL = (
     "https://seijiyama.jp/area/table/3624/BjtDe5/M"
-    "?detect=%E5%88%A4%E5%AE%9A"
-    "&S=qipe2lcqbo"
+    "?detect=%e5%88%a4%e5%ae%9a"
+    "&3734_252153_2=2022%2f03%2f31"
+    "&3734_252153_1=2022%2f01%2f01"
     "&_limit_3624=200"
-    "&_sort_length=3"
-    "&3734_252153_1=2015%2F01%2F01"
-    "&3734_252153_2=2021%2F12%2F31"
-    "&3734_252159_1=1"
+    "&S=qipe2lcqbo"
     "&3734_252159_1=2"
     "&3734_252150_1="
-    "&smp_sf_button_3734=%E6%A4%9C%E7%B4%A2"
+    "&_sort_length=3"
 )
 
 PAGE_PARAM = "_page_3624"
@@ -81,9 +79,9 @@ SLEEP_LIST = 1.5
 SLEEP_DETAIL = 1.0
 TIMEOUT = 30
 
-OUTPUT = "seijiyama_result.csv"
-PROGRESS = "seijiyama_progress.json"
-FAILLOG = "seijiyama_failures.log"
+OUTPUT = "seijiyama_result_2022.csv"
+PROGRESS = "seijiyama_progress_2022.json"
+FAILLOG = "seijiyama_failures_2022.log"
 
 FIELDNAMES = [
     "投票日", "告示日", "選挙名", "都道府県", "detail_url",
