@@ -344,7 +344,7 @@ locstats_als_comb$間隔異常 <- as.integer(
 # 7.6 locstats_alsに議員データとして明記する形でlocstats_als_combのデータを結合する。
 
 # 政令指定都市・特別区は選挙ではなく自治体の属性なので、地域コードから直接付ける
-attr_vars <- c("政令指定都市", "特別区")
+attr_vars <- c("都道府県", "地域", "政令指定都市", "特別区")
 locstats_als[, attr_vars] <- voting_data[match(locstats_als$地域コード, voting_data$地域コード), attr_vars]
 
 comb_vars <- c(el_vars, "選挙年", "経過年度", "間隔異常")
