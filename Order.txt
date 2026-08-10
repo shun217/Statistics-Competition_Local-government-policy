@@ -3,3 +3,5 @@ Order to proceed:
 1. Reshape_scraped.R:スクレイピングによる元データを自治体ごとの表形式にする。利用データ:data/seijiyama_result_all.csv。アウトプット:data/af_agg.csv。
 2. Reshape_table.R:自治体ごと表形式のデータを利用可能な欠損値のないデータへと変換する。利用データ:data/af_agg.csv。アウトプット:data/af_voting.csv。
 3. Crosssection_creation.R:作成したデータを合成してパネルデータを作成する。その際、選挙後の年数に関するダミー変数、ラベルを作成する。選挙の間隔が異常なものは削除する。利用データ:data/local_gov_statistics.csv, data/voting.csv。アウトプット:data/crosssection.csv。
+
+4. Analysis.R 分析
