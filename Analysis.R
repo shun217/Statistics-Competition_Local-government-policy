@@ -35,6 +35,12 @@ for (g in names(grp_flag)) {
     as.integer(grp_flag[[g]] == 1 & panel_read$首長選挙年 == 1)
 }
 
+# 1.2.1 2017年度の県費負担教職員給与負担の指定都市への移譲
+# 政令市の教育費だけが2017年度に約2倍（ln差 +0.73）になる会計上の断絶。
+# 年度固定効果は全国共通ショックしか吸収しないため、統制しないと
+# 政令市の交互作用項が水準シフトを拾う（首長選挙年_政令市は6倍に膨らむ）
+panel_read$政令市_post2017 <- as.integer(panel_read$政令指定都市 == 1 & panel_read$年度 >= 2017)
+
 # 1.3 パネルベースライン
 panel <- pdata.frame(panel_read, index = c("地域コード", "年度"))
 
@@ -64,7 +70,7 @@ fe3 <- function(y, controls, treat_c = "factor(議員経過年度)", treat_p = "
 
 # 2. ベースライン固定効果モデルの適用（被説明変数は logit(教育費シェア)）
 
-ctrl_share <- paste(attr_ctrl, "+ 地域女性割合 + 経常収支比率.市町村財政. + 児童生徒割合")
+ctrl_share <- paste(attr_ctrl, "+ 地域女性割合 + 経常収支比率.市町村財政. + 児童生徒割合 + 政令市_post2017")
 
 # 2.1 議員経過年度のみ／首長経過年度のみ／両者を処置変数とする
 base_share <- fe3("logit教育費シェア", ctrl_share)
@@ -258,7 +264,7 @@ write_bom(result_share, "analysis_results.csv")
 # 5. 被説明変数を ln(教育費) とするモデル
 # 規模の統制は児童生徒数（対数）。シェアと違い分母で規模を割っていないため
 
-ctrl_ln <- paste(attr_ctrl, "+ 地域女性割合 + 経常収支比率.市町村財政. + ln児童生徒数")
+ctrl_ln <- paste(attr_ctrl, "+ 地域女性割合 + 経常収支比率.市町村財政. + ln児童生徒数 + 政令市_post2017")
 
 # 5.1-5.3 議員経過年度のみ／首長経過年度のみ／両方
 base_ln <- fe3("ln教育費.市町村財政.", ctrl_ln)
