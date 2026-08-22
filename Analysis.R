@@ -35,6 +35,19 @@ for (g in names(grp_flag)) {
     as.integer(grp_flag[[g]] == 1 & panel_read$首長選挙年 == 1)
 }
 
+# 1.2.1 2017年度の県費負担教職員給与負担の指定都市への移譲
+# 政令市の教育費だけが2017年度に約2倍（ln差 +0.73）になる会計上の断絶。
+# 年度固定効果は全国共通ショックしか吸収しないため、統制しないと
+# 政令市の交互作用項が水準シフトを拾う（首長選挙年_政令市は6倍に膨らむ）
+panel_read$政令市_post2017 <- as.integer(panel_read$政令指定都市 == 1 & panel_read$年度 >= 2017)
+
+# 1.2.2 11節で処置ダミーと交差させる変数。標本平均で中央化する
+# 中央化しないと経過年度ダミーの係数が「その変数が0の自治体での効果」になり解釈できない
+ix_vars <- c(pop = "ln総人口", child = "児童生徒割合", cost = "経常収支比率.市町村財政.")
+
+for (v in ix_vars)
+  panel_read[[paste0(v, "_中央化")]] <- panel_read[[v]] - mean(panel_read[[v]])
+
 # 1.3 パネルベースライン
 panel <- pdata.frame(panel_read, index = c("地域コード", "年度"))
 
@@ -64,7 +77,9 @@ fe3 <- function(y, controls, treat_c = "factor(議員経過年度)", treat_p = "
 
 # 2. ベースライン固定効果モデルの適用（被説明変数は logit(教育費シェア)）
 
-ctrl_share <- paste(attr_ctrl, "+ 地域女性割合 + 経常収支比率.市町村財政. + 児童生徒割合")
+# 特別区ダミーは時間不変なので自治体固定効果に吸収される（plmが落とす）。
+# 特別区の違いは8節の交互作用項で見る
+ctrl_share <- paste(attr_ctrl, "+ 地域女性割合 + 経常収支比率.市町村財政. + 児童生徒割合 + 政令市_post2017")
 
 # 2.1 議員経過年度のみ／首長経過年度のみ／両者を処置変数とする
 base_share <- fe3("logit教育費シェア", ctrl_share)
@@ -223,17 +238,20 @@ add_boot <- function(res, models, B = 199) {
   res
 }
 
-# 交互作用モデルの結果表を作る。transは"share"（logit）か"pct"（ln）
-group_table <- function(models, trans, p0 = NULL, boot = "両方") {
+# 係数・換算値・p値・モデル情報を縦に積んだ結果表。transは"share"（logit）か"pct"（ln）
+res_table <- function(models, trans, p0 = NULL) {
   head <- if (trans == "share") "logit係数" else "ln係数"
   lab <- if (trans == "share") sprintf("教育費シェア%%pt (評価点 %.4f)", p0) else "教育費の変化率(%)"
 
-  res <- rbind(cbind(指標 = head, tab_of(models)),
-               cbind(指標 = lab, tab_of(models, trans, p0)),
-               cbind(指標 = "p値", tab_of(models, "p")),
-               cbind(指標 = "モデル情報", info_of(models)))
+  rbind(cbind(指標 = head, tab_of(models)),
+        cbind(指標 = lab, tab_of(models, trans, p0)),
+        cbind(指標 = "p値", tab_of(models, "p")),
+        cbind(指標 = "モデル情報", info_of(models)))
+}
 
-  add_boot(res, models[boot])
+# 交互作用モデルの結果表。少数クラスターで識別される係数にはブートストラップp値も付ける
+group_table <- function(models, trans, p0 = NULL, boot = "両方") {
+  add_boot(res_table(models, trans, p0), models[boot])
 }
 
 #=======================================
@@ -243,11 +261,7 @@ group_table <- function(models, trans, p0 = NULL, boot = "両方") {
 
 p_bar <- mean(panel_read$教育費シェア)
 
-result_share <- rbind(
-  cbind(指標 = "logit係数", tab_of(base_share)),
-  cbind(指標 = sprintf("教育費シェア%%pt (評価点 %.4f)", p_bar), tab_of(base_share, "share", p_bar)),
-  cbind(指標 = "p値", tab_of(base_share, "p")),
-  cbind(指標 = "モデル情報", info_of(base_share)))
+result_share <- res_table(base_share, "share", p_bar)
 
 result_share
 
@@ -258,7 +272,7 @@ write_bom(result_share, "analysis_results.csv")
 # 5. 被説明変数を ln(教育費) とするモデル
 # 規模の統制は児童生徒数（対数）。シェアと違い分母で規模を割っていないため
 
-ctrl_ln <- paste(attr_ctrl, "+ 地域女性割合 + 経常収支比率.市町村財政. + ln児童生徒数")
+ctrl_ln <- paste(attr_ctrl, "+ 地域女性割合 + 経常収支比率.市町村財政. + ln児童生徒数 + 政令市_post2017")
 
 # 5.1-5.3 議員経過年度のみ／首長経過年度のみ／両方
 base_ln <- fe3("ln教育費.市町村財政.", ctrl_ln)
@@ -266,11 +280,7 @@ base_ln <- fe3("ln教育費.市町村財政.", ctrl_ln)
 lapply(base_ln, summary)
 
 # 5.4 出力（ln係数と、教育費の変化率(%)への換算）
-result_ln <- rbind(
-  cbind(指標 = "ln係数", tab_of(base_ln)),
-  cbind(指標 = "教育費の変化率(%)", tab_of(base_ln, "pct")),
-  cbind(指標 = "p値", tab_of(base_ln, "p")),
-  cbind(指標 = "モデル情報", info_of(base_ln)))
+result_ln <- res_table(base_ln, "pct")
 
 result_ln
 
@@ -516,3 +526,71 @@ result_near <- group_table(near_year, "share", p_bar, c("首長のみ", "両方"
 result_near
 
 write_bom(result_near, "analysis_results_near.csv")
+
+#=======================================
+
+# 11. 選挙サイクルの効果が自治体の特性で異なるかの検証
+# ベースライン（2節・5節）に、交差させる変数（1.2.2のix_vars）の主効果と
+# 処置ダミーとの交差項を加える。変数は中央化してあるので、経過年度ダミーの係数は
+# 平均的な自治体での効果、交差項はその変数が1増えるごとの上乗せ分を表す。
+# 政令市・特別区ダミーと違い3変数とも時間変動するので自治体固定効果に吸収されない
+
+ix_ys <- c(シェア = "logit(教育費シェア)", ln = "ln(教育費)")
+
+# 11.1 交差項入りのモデル（議員のみ・首長のみ・両方 × 被説明変数2つ）
+# 交差項の変数名は式に現れる順で付くので、中央化した変数を先に書いて3モデルで行名を揃える
+ix_fit <- function(v) {
+  cv <- paste0(v, "_中央化")
+  treat_c <- paste(cv, "* factor(議員経過年度)")
+  treat_p <- paste(cv, "* factor(首長経過年度)")
+
+  # 生の変数が統制変数に入っている場合は中央化したものに差し替える（重複を避ける）
+  list(シェア = fe3("logit教育費シェア", sub(v, cv, ctrl_share, fixed = TRUE), treat_c, treat_p),
+       ln = fe3("ln教育費.市町村財政.", sub(v, cv, ctrl_ln, fixed = TRUE), treat_c, treat_p))
+}
+
+ix_fits <- lapply(ix_vars, ix_fit)
+
+# 11.2 結果表（交差変数ごとに被説明変数2つ）
+result_ix <- lapply(ix_fits, function(f)
+  list(シェア = res_table(f$シェア, "share", p_bar), ln = res_table(f$ln, "pct")))
+
+for (tag in names(ix_vars)) {
+  write_bom(result_ix[[tag]]$シェア, sprintf("analysis_results_%s.csv", tag))
+  write_bom(result_ix[[tag]]$ln, sprintf("analysis_results_ln_%s.csv", tag))
+}
+
+result_ix$pop$シェア
+result_ix$child$シェア
+result_ix$cost$シェア
+
+# 11.3 交差項が全てゼロ（＝その変数による異質性がない）をクラスター頑健分散でWald検定する
+wald_zero <- function(m, pat) {
+  b <- coef(m)
+  V <- cl(m)
+  k <- grep(pat, names(b))
+
+  w <- as.numeric(t(b[k]) %*% solve(V[k, k], b[k]))
+  c(カイ二乗 = w, 自由度 = length(k), p値 = pchisq(w, length(k), lower.tail = FALSE))
+}
+
+# 交差変数 × 被説明変数 × 検定対象（議員／首長／両方）の総当たり
+result_ix_wald <- do.call(rbind, lapply(names(ix_vars), function(tag) {
+  cv <- paste0(ix_vars[[tag]], "_中央化")
+
+  do.call(rbind, lapply(names(ix_ys), function(y) {
+    x <- t(sapply(c(議員 = "議員", 首長 = "首長", `議員・首長` = ""),
+                  function(z) round(wald_zero(ix_fits[[tag]][[y]]$両方,
+                                              sprintf("^%s:factor\\(%s", cv, z)), 4)))
+    cbind(交差変数 = ix_vars[[tag]], 被説明変数 = ix_ys[[y]], x)
+  }))
+}))
+
+result_ix_wald
+
+write_bom(result_ix_wald, "analysis_results_ix_wald.csv")
+
+# 11.4 交差項の係数は変数1単位あたりなので、換算用に標準偏差を出しておく
+result_ix_sd <- sapply(ix_vars, function(v) round(sd(panel_read[[v]]), 4))
+
+result_ix_sd

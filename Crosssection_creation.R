@@ -479,11 +479,16 @@ desc_stats
 
 write.csv(desc_stats, "descriptive_stats.csv", fileEncoding = "UTF-8")
 
-# 10.2 年度ごとの選挙数（選挙のあった自治体の数）
-elec_tab <- with(locstats_als, cbind(議員選挙 = tapply(議員選挙年, 年度, sum),
-                                     首長選挙 = tapply(首長選挙年, 年度, sum)))
+# 10.2 年度ごとの選挙数（選挙のあった自治体の数）。政令指定都市の内訳も並べる
+elec_tab <- with(locstats_als,
+                 cbind(議員選挙 = tapply(議員選挙年, 年度, sum),
+                       議員選挙_政令市 = tapply(議員選挙年 * 政令指定都市, 年度, sum),
+                       首長選挙 = tapply(首長選挙年, 年度, sum),
+                       首長選挙_政令市 = tapply(首長選挙年 * 政令指定都市, 年度, sum)))
 
-elec_tab <- cbind(elec_tab, 合計 = rowSums(elec_tab))
+elec_tab <- cbind(elec_tab,
+                  合計 = elec_tab[, "議員選挙"] + elec_tab[, "首長選挙"],
+                  合計_政令市 = elec_tab[, "議員選挙_政令市"] + elec_tab[, "首長選挙_政令市"])
 
 elec_tab
 
